@@ -9,10 +9,6 @@ __pycache__/
 *.ipynb_checkpoints
 *.pyc
 *.out
-*.jpg
-*.png
-*.jpeg
-*.gif
 *.lmdb
 *.lmdb-lock
 *.zip
