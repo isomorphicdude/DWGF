@@ -58,6 +58,6 @@ def get_output_img(cfg) -> list[str]:
         if os.path.isdir(item_path):
             for img in os.listdir(item_path):
                 # individual images are saved as x_0.png, x_1.png, etc.
-                if img.endswith('.png'):
+                if img.endswith(".png"):
                     output_img.append(os.path.join(item_path, img))
     return output_img

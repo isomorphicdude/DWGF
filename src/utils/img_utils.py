@@ -74,8 +74,8 @@ def save_result(name, x, y, info, samples_root, suffix=""):
         save_imagenet_result(x, y, info, samples_root, suffix)
     elif "FFHQ" in name:
         save_ffhq_result(x, y, info, samples_root, suffix)
-        
-        
+
+
 def resize_input(x):
     if x.shape[-1] == 256:
         upsample = nn.Upsample(scale_factor=2, mode="nearest")

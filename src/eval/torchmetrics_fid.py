@@ -7,10 +7,13 @@
 import torch
 from torchmetrics.image.fid import FrechetInceptionDistance
 
-def compute_fid(dataset_samples: torch.Tensor,
-                model_samples: torch.Tensor,
-                device: str = 'cuda',
-                batch_size: int = 10):
+
+def compute_fid(
+    dataset_samples: torch.Tensor,
+    model_samples: torch.Tensor,
+    device: str = "cuda",
+    batch_size: int = 10,
+):
     """
     Computes the Fréchet Inception Distance (FID) between two sets of images,
     which can have different numbers of samples.
@@ -30,13 +33,13 @@ def compute_fid(dataset_samples: torch.Tensor,
     n_real = real_images.shape[0]
     print(f"Processing {n_real} real images...")
     for i in range(0, n_real, batch_size):
-        real_batch = real_images[i:i+batch_size, ...].to(device)
+        real_batch = real_images[i : i + batch_size, ...].to(device)
         fid_metric.update(real_batch, real=True)
 
     n_fake = fake_images.shape[0]
     print(f"Processing {n_fake} fake images...")
     for i in range(0, n_fake, batch_size):
-        fake_batch = fake_images[i:i+batch_size, ...].to(device)
+        fake_batch = fake_images[i : i + batch_size, ...].to(device)
         fid_metric.update(fake_batch, real=False)
 
     print("Computing FID score...")

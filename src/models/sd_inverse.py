@@ -2,6 +2,7 @@ import torch
 
 from diffusers import StableDiffusionPipeline
 
+
 class SDInversePipeline(StableDiffusionPipeline):
     def decode_latents(self, latents, stay_on_device=False):
         latents = 1 / self.vae.config.scaling_factor * latents

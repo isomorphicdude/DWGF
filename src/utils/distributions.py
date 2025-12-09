@@ -33,10 +33,13 @@ def gaussian_iso_logprob(x, mu, logvar, sequential=False):
     logvar is a float.
     """
     d = x.shape[-1]
+
     def single_ver(x, mu, logvar):
         return -0.5 * (
-            torch.sum((x - mu).pow(2) * math.exp(-logvar), dim=-1) + d * (logvar + LOG_2PI)
+            torch.sum((x - mu).pow(2) * math.exp(-logvar), dim=-1)
+            + d * (logvar + LOG_2PI)
         )
+
     if sequential:
         bs = x.shape[0]
         out_list = []

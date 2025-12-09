@@ -17,9 +17,11 @@ def init_omega(cfg, cwd):
     cfg.cwd = cwd
     return cfg
 
+
 def ensure_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
 
 def seed_everything(seed):
     torch.manual_seed(seed)

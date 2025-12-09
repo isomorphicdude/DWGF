@@ -11,9 +11,7 @@ import random
 import torch.nn as nn
 
 parser = argparse.ArgumentParser(description="Generate images with stable diffusion")
-parser.add_argument(
-    "--dir_path", type=str, default="_exp/input/FFHQ"
-)
+parser.add_argument("--dir_path", type=str, default="_exp/input/FFHQ")
 parser.add_argument(
     "--dest_folder",
     type=str,

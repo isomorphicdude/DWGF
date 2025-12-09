@@ -88,7 +88,9 @@ def compute_lpips_score(lpips_model, xo, x_gt, move_ref_to_cuda=True):
     return lpips_model(xo.cuda(), reference)
 
 
-def process_single_image(cfg, algo, H, ts, generator, dino, lpips_, output_path, logger):
+def process_single_image(
+    cfg, algo, H, ts, generator, dino, lpips_, output_path, logger
+):
     img_path = os.path.join(cfg.exp.img_path, cfg.exp.img_id)
     img = Image.open(img_path).convert("RGB")
     transform = transforms.Compose([transforms.ToTensor()])
@@ -138,7 +140,19 @@ def process_single_image(cfg, algo, H, ts, generator, dino, lpips_, output_path,
     logger.info(f"Done. You can fine the generated images in {output_path_img}")
 
 
-def process_dataset(cfg, algo, H, ts, generator, dino, lpips_, output_path, logger, dataset_name, max_num_images):
+def process_dataset(
+    cfg,
+    algo,
+    H,
+    ts,
+    generator,
+    dino,
+    lpips_,
+    output_path,
+    logger,
+    dataset_name,
+    max_num_images,
+):
     loader = build_loader(cfg)
     logger.info(f"Dataset size is {len(loader.dataset)}")
 

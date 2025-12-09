@@ -15,6 +15,7 @@ from PIL import Image
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def raw_reader(path):
     with open(path, "rb") as f:
         bin_data = f.read()
@@ -30,9 +31,8 @@ def dump_pickle(obj):
     """
     return pickle.dumps(obj)
 
-def folder2lmdb(
-    dpath, name="train_images", write_frequency=5000, num_workers=0
-) -> str:
+
+def folder2lmdb(dpath, name="train_images", write_frequency=5000, num_workers=0) -> str:
     """
     Converts a folder of images to lmdb dataset and returns the path to the lmdb dataset.
     """
@@ -85,9 +85,7 @@ def folder2lmdb(
 
 @click.command()
 @click.option("--dpath", required=True, help="Path to the folder containing images.")
-@click.option(
-    "--split", default="val", help="Dataset split (e.g., train, val, test)."
-)
+@click.option("--split", default="val", help="Dataset split (e.g., train, val, test).")
 @click.option("--num-workers", type=int, default=4, help="Number of worker processes.")
 def main(dpath, split, num_workers):
     try:

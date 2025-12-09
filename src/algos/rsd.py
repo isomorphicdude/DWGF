@@ -49,7 +49,7 @@ class RSD(DDIM):
             (1 - self.model.scheduler.alphas_cumprod)
             / self.model.scheduler.alphas_cumprod
         )
-        #TODO: null text embeddings
+        # TODO: null text embeddings
         self.prompt_embeds = self.model.encode_prompt(
             [""] * cfg.algo.n_particles,
             self.device,
@@ -78,38 +78,61 @@ class RSD(DDIM):
         H = self.H
         input_img = x
 
-        #optimizer
+        # optimizer
         x_init = torch.randn((batch_size, 3, self.height, self.width)).cuda()
         x = torch.autograd.Variable(x_init, requires_grad=True)
-        optimizer_x = torch.optim.Adam([x], lr=self.lr_x, betas=(0.9, 0.99), weight_decay=0.0)   #original: 0.999
-        latents = self.model.prepare_latents(batch_size, self.num_channels_latents, self.height, self.width, dtype=self.prompt_embeds.dtype, device=self.device, generator=generator)
+        optimizer_x = torch.optim.Adam(
+            [x], lr=self.lr_x, betas=(0.9, 0.99), weight_decay=0.0
+        )  # original: 0.999
+        latents = self.model.prepare_latents(
+            batch_size,
+            self.num_channels_latents,
+            self.height,
+            self.width,
+            dtype=self.prompt_embeds.dtype,
+            device=self.device,
+            generator=generator,
+        )
         latents = torch.autograd.Variable(latents, requires_grad=True).cuda()
-        optimizer_z = torch.optim.Adam([latents], lr=self.lr_z, betas=(0.9, 0.99), weight_decay=0.0)   #original: 0.999
+        optimizer_z = torch.optim.Adam(
+            [latents], lr=self.lr_z, betas=(0.9, 0.99), weight_decay=0.0
+        )  # original: 0.999
 
         counter = 0
         x_list = []
-        sigmas = torch.sqrt((1 - self.model.scheduler.alphas_cumprod) / self.model.scheduler.alphas_cumprod)
+        sigmas = torch.sqrt(
+            (1 - self.model.scheduler.alphas_cumprod)
+            / self.model.scheduler.alphas_cumprod
+        )
         sigmas = sigmas[self.model.scheduler.timesteps.cpu().numpy()]
 
-        idx_sigma_break = int(((self.model.scheduler.timesteps.shape[0])/ 1000 ) * self.sigma_break)
+        idx_sigma_break = int(
+            ((self.model.scheduler.timesteps.shape[0]) / 1000) * self.sigma_break
+        )
 
         for i, t in tqdm(enumerate(ts[:-1])):
             noise_t = torch.randn_like(latents).cuda()
             latent_pred_t = self.model.scheduler.add_noise(latents, noise_t, t)
             latent_pred_t = self.model.scheduler.scale_model_input(latent_pred_t, t)
-            alpha_t = self.model.scheduler.alphas_cumprod[self.model.scheduler.timesteps[i].cpu().numpy()]
+            alpha_t = self.model.scheduler.alphas_cumprod[
+                self.model.scheduler.timesteps[i].cpu().numpy()
+            ]
             alpha_t.requires_grad_(True)
 
             with torch.no_grad():
-                et = self.model.unet(latent_pred_t, t, encoder_hidden_states=self.prompt_embeds, cross_attention_kwargs=None).sample
+                et = self.model.unet(
+                    latent_pred_t,
+                    t,
+                    encoder_hidden_states=self.prompt_embeds,
+                    cross_attention_kwargs=None,
+                ).sample
             et = et.detach()
             noise_pred = et - noise_t
-
 
             # Repulsion term
             if self.dino_flag is True and sigmas[i] > sigmas[idx_sigma_break]:
                 if counter % 50 == 0:
-                    print(f'Using DINO at step {counter}')
+                    print(f"Using DINO at step {counter}")
                 latent_pred_t.requires_grad_(True)
                 dino.requires_grad_(True)
                 self.model.vae.decoder.requires_grad_(True)
@@ -121,13 +144,16 @@ class RSD(DDIM):
 
                 latents_vec = dino_out.view(len(dino_out), -1)
                 diff = latents_vec.unsqueeze(1) - latents_vec.unsqueeze(0)
-                diff = diff[~torch.eye(diff.shape[0], dtype=bool)].view(diff.shape[0], -1, diff.shape[-1])
+                diff = diff[~torch.eye(diff.shape[0], dtype=bool)].view(
+                    diff.shape[0], -1, diff.shape[-1]
+                )
 
                 distance = torch.norm(diff, p=2, dim=-1, keepdim=True)
                 num_images = latents_vec.shape[0]
                 h_t = (distance.median(dim=1, keepdim=True)[0]) ** 2 / np.log(
-                    num_images - 1)
-                weights = torch.exp(- (distance ** 2 / h_t))
+                    num_images - 1
+                )
+                weights = torch.exp(-(distance**2 / h_t))
 
                 grad_phi = 2 * weights * diff / h_t
                 grad_phi = grad_phi.sum(dim=1)
@@ -136,9 +162,13 @@ class RSD(DDIM):
                 deps_dx_backprop = torch.autograd.grad(eval_sum, latent_pred_t)[0]
                 grad_phi = deps_dx_backprop.view_as(latents)
 
-                K_svgd_z_mat_reg_sum = weights.sum(dim = 1)
-                nabla_log = torch.div(grad_phi, K_svgd_z_mat_reg_sum.unsqueeze(-1).unsqueeze(-1))
-                noise_pred = et - noise_t - self.gamma * (1-alpha_t).sqrt() * nabla_log
+                K_svgd_z_mat_reg_sum = weights.sum(dim=1)
+                nabla_log = torch.div(
+                    grad_phi, K_svgd_z_mat_reg_sum.unsqueeze(-1).unsqueeze(-1)
+                )
+                noise_pred = (
+                    et - noise_t - self.gamma * (1 - alpha_t).sqrt() * nabla_log
+                )
 
             else:
                 noise_pred = et - noise_t
@@ -146,9 +176,8 @@ class RSD(DDIM):
             loss_diffusion = torch.mul((noise_pred).detach(), latents).mean()
 
             # Weighting
-            snr_inv = (1-alpha_t).sqrt() / alpha_t.sqrt()
+            snr_inv = (1 - alpha_t).sqrt() / alpha_t.sqrt()
             rho_reg = self.rho_reg
-
 
             ## Optimize z ##
             x_pred_z = self.model.decode_latents(latents, stay_on_device=True)
@@ -169,13 +198,13 @@ class RSD(DDIM):
             e_obs = y_0 - H.H(x)
             loss_obs = (e_obs**2).mean() / 2
 
-            loss_x = loss_obs + (rho_reg) *  loss_reg
+            loss_x = loss_obs + (rho_reg) * loss_reg
 
             optimizer_x.zero_grad()
             loss_x.backward()
             optimizer_x.step()
 
-            #save for visualization
+            # save for visualization
             if self.cfg.exp.save_evolution:
                 self.save_evo(counter, x, latents, input_img, x_list, results256)
             else:
@@ -187,18 +216,16 @@ class RSD(DDIM):
 
     @torch.no_grad()
     def save_evo(self, counter, x, latents, input_img, x_list, results256=False):
-        if not (counter % self.cfg.exp.save_every == 0) or not (counter == self.cfg.exp.num_steps - 1):
+        if not (counter % self.cfg.exp.save_every == 0) or not (
+            counter == self.cfg.exp.num_steps - 1
+        ):
             return
-        print(f'Saving evolution at step {counter}')
+        print(f"Saving evolution at step {counter}")
         image_evol = make_grid((postprocess(x).clone().detach().cpu()))
         save_image(image_evol, f"{self.evol_path}/evol_{counter}.png")
 
-        image_z = self.model.decode_latents(
-            latents, stay_on_device=True
-        ).detach()
-        z_evol = make_grid(
-            (postprocess(image_z).clone().detach().cpu())
-        )
+        image_z = self.model.decode_latents(latents, stay_on_device=True).detach()
+        z_evol = make_grid((postprocess(image_z).clone().detach().cpu()))
         save_image(z_evol, f"{self.evol_path}/evol_{counter}_z.png")
 
         if results256 == True:
@@ -207,9 +234,7 @@ class RSD(DDIM):
             x_256 = torch.zeros((self.cfg.algo.n_particles, 3, 256, 256))
             xx = postprocess(x).clone().detach().cpu()
             for q in range(self.cfg.algo.n_particles):
-                aux[q, :, :, :] = downsample(
-                    xx[q, :, :, :].unsqueeze(0)
-                ).squeeze()
+                aux[q, :, :, :] = downsample(xx[q, :, :, :].unsqueeze(0)).squeeze()
                 x_256[q, :, :, :] = downsample(
                     postprocess(input_img[q, :, :, :].unsqueeze(0))
                 ).squeeze()
@@ -235,12 +260,8 @@ class RSD(DDIM):
         image_evol = make_grid((postprocess(x).clone().detach().cpu()))
         save_image(image_evol, f"{self.evol_path}/evol_{counter}.png")
 
-        image_z = self.model.decode_latents(
-            latents, stay_on_device=True
-        ).detach()
-        image_evol = make_grid(
-            (postprocess(image_z).clone().detach().cpu())
-        )
+        image_z = self.model.decode_latents(latents, stay_on_device=True).detach()
+        image_evol = make_grid((postprocess(image_z).clone().detach().cpu()))
         save_image(image_evol, f"{self.evol_path}/evol_{counter}_z.png")
 
         if results256 == True:
@@ -249,9 +270,7 @@ class RSD(DDIM):
             x_256 = torch.zeros((self.cfg.algo.n_particles, 3, 256, 256))
             xx = postprocess(x).clone().detach().cpu()
             for q in range(self.cfg.algo.n_particles):
-                aux[q, :, :, :] = downsample(
-                    xx[q, :, :, :].unsqueeze(0)
-                ).squeeze()
+                aux[q, :, :, :] = downsample(xx[q, :, :, :].unsqueeze(0)).squeeze()
                 x_256[q, :, :, :] = downsample(
                     postprocess(input_img[q, :, :, :].unsqueeze(0))
                 ).squeeze()

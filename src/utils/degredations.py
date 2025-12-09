@@ -1066,9 +1066,7 @@ def build_one_degredation_model(cfg, h, w, c, deg: str):
         # current_dir = os.getcwd()
 
         # current_dir = '/lustre/fsw/nvresearch/mmardani/source/latent-diffusion-sampling/pgdm'
-        current_dir = (
-            "/home//Repulsive-score-distillation-RSD-/constrained_sampling"
-        )
+        current_dir = "/home//Repulsive-score-distillation-RSD-/constrained_sampling"
 
         opt_yml_path = os.path.join(
             current_dir, "bkse/options/generate_blur/default.yml"

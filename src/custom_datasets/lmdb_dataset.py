@@ -32,7 +32,7 @@ class LMDBDataset(data.Dataset):
             lmdb_path = os.path.join(root, "validation.lmdb")
         else:
             lmdb_path = os.path.join(f"{root}")
-            
+
         self.lmdb_path = lmdb_path
 
         print(f"Loading dataset from {lmdb_path}")
@@ -49,7 +49,7 @@ class LMDBDataset(data.Dataset):
         with self.data_lmdb.begin(write=False) as txn:
             self.length = pickle.loads(txn.get(b"__len__"))
             self.keys = pickle.loads(txn.get(b"__keys__"))
-            
+
     def open_lmdb(self):
         self.env = lmdb.open(
             self.lmdb_path,
@@ -66,12 +66,12 @@ class LMDBDataset(data.Dataset):
     def __getitem__(self, index):
         # target = 0
         # with self.data_lmdb.begin(write=False, buffers=True) as txn:
-            
+
         #     key = f"{256}-{str(index).zfill(5)}".encode("utf-8")
         #     data = txn.get(key)
         #     img = Image.open(io.BytesIO(data))
         #     img = img.convert("RGB")
-        
+
         if not hasattr(self, "txn"):
             self.open_lmdb()
 

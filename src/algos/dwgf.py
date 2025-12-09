@@ -103,9 +103,9 @@ class DWGF(RSD):
 
             # data likelihood term
             x_pred_z = self.model.decode_latents(latents, stay_on_device=True)
-            u_loss_obs = ((y_0 - H.H(x_pred_z)) ** 2).mean() / 2
-
             noise = torch.randn_like(x_pred_z) * self.cfg.algo.decoder_std
+            u_loss_obs = ((y_0 - H.H(x_pred_z + noise)) ** 2).mean() / 2
+
             with torch.no_grad():
                 x_decode_encode = self.model.decode_latents(
                     self.model.encode_images(x_pred_z + noise), stay_on_device=True
