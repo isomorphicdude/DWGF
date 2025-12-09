@@ -1,0 +1,29 @@
+# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved
+
+prompt: ""
+outdir: ""
+skip_grid: "store_false"
+skip_cache: False
+skip_save: False
+skip_vis: True
+ddim_steps: 999
+plms: False
+laion400m: False
+fixed_code: False
+ddim_eta: 1.0
+n_iter: 1
+H: 64 #512  #512    #256
+W: 64 #512  #512    #256
+C: 4
+f: 8
+n_samples: 8
+n_rows: 0
+scale: 0.0
+from_file: #./text/imagenet1000_clsidx_to_labels.txt
+config: #./configs/stable-diffusion/v1-inference.yaml
+ckpt: #/lustre/fsw/nvresearch/mmardani/source/ldm/stable-diffusion-v1//sd-v1-4.ckpt
+seed: 42
+precision: "full" #["full", "autocast"]
+indir: ./data/inpainting_examples
+alg: "varinf" #["varinf", "varinf-adam", "dps", "ddim"]
+task: "inp-Palette" #["sr-LaMa", "inp-LaMa", "sr-Palette", "inp-Palette", "txt2img"]

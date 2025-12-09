@@ -1,0 +1,10 @@
+# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved
+
+name: "ImageNet_256x256"
+root: "dataset/imagenet-root"
+split: "val"
+image_size: 512
+channels: 3
+meta_root: "dataset/imagenet-root"
+transform: "diffusion"
+subset_txt: "dataset/dgp_top1k.txt"

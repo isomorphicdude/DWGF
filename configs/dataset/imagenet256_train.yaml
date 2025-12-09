@@ -1,0 +1,10 @@
+# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved
+# Deprecated, do not use
+name: "ImageNet_256x256"
+root: "dataset/imagenet-root"
+split: "train"
+image_size: 256
+channels: 3
+meta_root: "dataset/imagenet-root"
+transform: "diffusion"
+subset_txt: ""

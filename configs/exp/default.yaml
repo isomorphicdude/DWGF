@@ -1,0 +1,23 @@
+# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved
+
+root: "_exp/"
+load_img_id: False
+save_evolution: True
+save_every: 100
+evol_path: "evol"
+output_path: "output"
+save_ori: False
+ori_path: "ground_truth"
+save_deg: True
+deg_path: "deg"
+ckpt_root: "ckpts"
+
+overwrite: True
+
+num_steps: 200
+start_step: 1000
+end_step: 0
+logfreq: 200
+max_num_images: 2
+use_wandb: False
+seed: 1
