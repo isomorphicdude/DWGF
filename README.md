@@ -6,12 +6,8 @@
 This is the implementation of the NeurIPS FPI workshop paper *A Gradient Flow Approach to Solving Inverse Problems with Latent Diffusion Models* https://arxiv.org/abs/2509.19276.
 
 ## Installation
-- Make sure to clone the submodules after cloning the repository:
-```bash
-git submodule update --init --recursive
-```
 
-- We use `uv` to manage the environment. Create the environment with:
+ We use `uv` to manage the environment. Create the environment with:
 ```bash
 uv venv dwgf --python=3.11
 source dwgf/bin/activate
