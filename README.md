@@ -3,7 +3,10 @@
 > This repository is based on the implementation of [Repulsive Score Distillation](https://github.com/nzilberstein/Repulsive-score-distillation-RSD-.git). We thank the authors for open-sourcing their code.
 
 
-This is the implementation of the NeurIPS FPI workshop paper *A Gradient Flow Approach to Solving Inverse Problems with Latent Diffusion Models* https://arxiv.org/abs/2509.19276.
+This is the implementation of the NeurIPS FPI workshop paper *A Gradient Flow Approach to Solving Inverse Problems with Latent Diffusion Models* https://arxiv.org/abs/2509.19276. 
+
+## Demo Notebook
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1sSFonPOF88BZRIIZJJZ4Ak5HA4sMnD0f?usp=sharing)
 
 ## Installation
 
